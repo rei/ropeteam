@@ -5,10 +5,8 @@ import java.util.concurrent.locks.Lock;
 
 import org.jgroups.JChannel;
 import org.jgroups.blocks.locking.LockService;
-import org.jgroups.fork.ForkChannel;
 import org.jgroups.protocols.CENTRAL_LOCK;
 import org.jgroups.stack.Protocol;
-import org.jgroups.stack.ProtocolStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,16 +19,7 @@ public class OncePerClusterExecutor {
     
     public OncePerClusterExecutor(JChannel channel) throws Exception {
         this.channel = channel;
-        lockService = new LockService(createForkChannel(channel));
-    }
-
-    private ForkChannel createForkChannel(JChannel channel) throws Exception {
-        ForkChannel fork = new ForkChannel(channel, "opc-coordinator", "opc", true, 
-                                        ProtocolStack.ABOVE, 
-                                        channel.getProtocolStack().getTopProtocol().getClass(), 
-                                        createLockingProtocol());
-        fork.connect("opc");
-        return fork;
+        lockService = new LockService(Forks.fork(channel, "once-per-cluster", createLockingProtocol()));
     }
 
     private Protocol createLockingProtocol() {
