@@ -35,14 +35,27 @@ public class ClusterEventBus {
     
     public void publishEvent(Object event) {
         try {
-            String s = mapper.writer().writeValueAsString(event);
-            byte[] body = (event.getClass().getName() + "\n" + s).getBytes();
-            channel.send(new Message(null, body));
+            channel.send(null, toBytes(event));
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("unable to write event as json", e);
         } catch (Exception e) {
             throw new RuntimeException("failed to send event", e);
         }
+    }
+
+    private byte[] toBytes(Object event) throws JsonProcessingException {
+        String s = mapper.writer().writeValueAsString(event);
+        byte[] body = (event.getClass().getName() + "\n" + s).getBytes();
+        return body;
+    }
+    
+    private Object fromBytes(byte[] bytes) throws ClassNotFoundException, IOException {
+        String s = new String(bytes);
+        String className = s.substring(0, s.indexOf('\n'));
+        Class<?> eventType = Class.forName(className);
+        ObjectReader reader = mapper.reader(eventType);
+        String payload = s.substring(className.length());
+        return reader.readValue(payload);
     }
     
     private void receiveEvent(Object event) {
@@ -54,17 +67,12 @@ public class ClusterEventBus {
     public class EventBusReceiver extends ReceiverAdapter {
         @Override
         public void receive(Message msg) {
-            String s = new String(msg.getBuffer());
-            String className = s.substring(0, s.indexOf('\n'));
             try {
-                Class<?> eventType = Class.forName(className);
-                ObjectReader reader = mapper.reader(eventType);
-                String payload = s.substring(className.length());
-                receiveEvent(reader.readValue(payload));
+                receiveEvent(fromBytes(msg.getBuffer()));
             } catch (ClassNotFoundException e) {
-                logger.warn("received event for unknown type: {}", className);
+                logger.warn("received event for unknown type", e);
             } catch (IOException e) {
-                logger.warn("failed to receive event of type: {}", className, e);
+                logger.warn("failed to receive event", e);
             }
         }
     }
