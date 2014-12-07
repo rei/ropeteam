@@ -1,6 +1,7 @@
-package io.github.jeffskj.jgroups;
+package io.github.flock;
 
 import static org.junit.Assert.assertEquals;
+import io.github.flock.OncePerClusterExecutor;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;

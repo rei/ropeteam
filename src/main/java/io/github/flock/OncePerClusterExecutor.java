@@ -1,4 +1,4 @@
-package io.github.jeffskj.jgroups;
+package io.github.flock;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.locks.Lock;
