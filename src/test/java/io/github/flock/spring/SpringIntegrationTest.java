@@ -1,6 +1,7 @@
 package io.github.flock.spring;
 
 import static org.junit.Assert.assertEquals;
+import io.github.flock.EventPublisher;
 
 import org.jgroups.JChannel;
 import org.jgroups.util.Util;
@@ -25,12 +26,18 @@ public class SpringIntegrationTest {
         context1.getBean(TestBean.class).oncePerCluster();
         context2.getBean(TestBean.class).oncePerCluster();
         
+        context2.getBean(EventPublisher.class).publish(new BlankEvent());
+        context2.getBean(EventPublisher.class).publish(new BlankEvent());
+        
         Thread.sleep(100);
         
         assertEquals(1, context2.getBean(TestBean.class).getReceivedEvents().size());
         
         assertEquals(1, context1.getBean(TestBean.class).getOpcInvocations());
         assertEquals(0, context2.getBean(TestBean.class).getOpcInvocations());
+        
+        assertEquals(2, context1.getBean(TestBean.class).getBlankEvents().size());
+        assertEquals(2, context2.getBean(TestBean.class).getBlankEvents().size());
     }
 
     @Configuration

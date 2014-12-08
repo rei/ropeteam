@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TestBean {
     private int opcInvocations = 0;
     private List<Event> receivedEvents = new ArrayList<>();
+    private List<BlankEvent> blankEvents = new ArrayList<>();
     
     @Autowired
     private EventPublisher publisher;
@@ -24,6 +25,12 @@ public class TestBean {
         Event event = new Event();
         event.setData(UUID.randomUUID().toString());
         publisher.publish(event);
+    }
+    
+    @EventSubscriber
+    public void blankSubscriber(BlankEvent e) {
+        System.out.println("blank event");
+        blankEvents.add(e);
     }
     
     @EventSubscriber
@@ -45,5 +52,9 @@ public class TestBean {
     
     public List<Event> getReceivedEvents() {
         return receivedEvents;
+    }
+    
+    public List<BlankEvent> getBlankEvents() {
+        return blankEvents;
     }
 }
