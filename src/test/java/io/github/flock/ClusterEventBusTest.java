@@ -20,14 +20,14 @@ public class ClusterEventBusTest {
         createBus(received);
         createBus(received);
         
-        mainBus.publishEvent(new MyEvent(123, "this is a test"));
+        mainBus.publish(new MyEvent(123, "this is a test"));
         
         Thread.sleep(100);
         
         assertEquals(3, received.size());
         received.clear();
         
-        mainBus.publishEvent(new MyEvent(456, "another test"));
+        mainBus.publish(new MyEvent(456, "another test"));
         
         Thread.sleep(100);
         

@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
-public class ClusterEventBus {
+public class ClusterEventBus implements EventPublisher {
     private static final Logger logger = LoggerFactory.getLogger(ClusterEventBus.class);
     
     private Multimap<Class, EventSubscriber> subscribers = ArrayListMultimap.create();
@@ -33,7 +33,8 @@ public class ClusterEventBus {
         subscribers.put(eventType, listener);
     }
     
-    public void publishEvent(Object event) {
+    @Override
+    public void publish(Object event) {
         try {
             channel.send(null, toBytes(event));
         } catch (JsonProcessingException e) {

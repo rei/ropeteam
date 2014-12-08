@@ -1,7 +1,6 @@
 package io.github.flock;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.locks.Lock;
 
 import org.jgroups.JChannel;
 import org.jgroups.blocks.locking.LockService;
@@ -17,7 +16,7 @@ public class OncePerClusterExecutor {
     private LockService lockService;
     private JChannel channel;
     
-    public OncePerClusterExecutor(JChannel channel) throws Exception {
+    public OncePerClusterExecutor(JChannel channel) {
         this.channel = channel;
         lockService = new LockService(Forks.fork(channel, "once-per-cluster", createLockingProtocol()));
     }
@@ -35,9 +34,12 @@ public class OncePerClusterExecutor {
         return locking;
     }
     
+    public boolean canExecute(String cmdName) {
+        return lockService.getLock(cmdName).tryLock();
+    }
+    
     public void execute(String cmdName, Runnable cmd) {
-        Lock lock = lockService.getLock(cmdName);
-        if (lock.tryLock()) {
+        if (canExecute(cmdName)) {
             logger.info("running {} on {}", cmdName, channel.getAddressAsString());
             cmd.run();
         }
