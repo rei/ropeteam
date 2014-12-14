@@ -3,6 +3,8 @@ flock
 
 distributed events and coordination for jgroups clusters in spring applications.
 
+[![Build Status](https://travis-ci.org/jeffskj/flock.svg?branch=master)](https://travis-ci.org/jeffskj/flock)
+
 Features
 --------
   * Cluster member task limiting
