@@ -17,12 +17,12 @@ A task will stay assigned to the same member unless it dies, in which case it wi
 
 **Example**
 
-   @OncePerCluster
-   @Scheduled(fixedDelay=1000)
-   public void someScheduledTask() {
-     // method will only actually be called on one host per cluster
-     // the same host will always run the task unless it dies 
-   }
+    @OncePerCluster
+    @Scheduled(fixedDelay=1000)
+    public void someScheduledTask() {
+      // method will only actually be called on one host per cluster
+      // the same host will always run the task unless it dies 
+    }
 
 Clustered Event Bus
 -------------------
