@@ -44,6 +44,7 @@ public class EventSubscriberRegistrar implements ApplicationContextAware {
             .map(n -> applicationContext.getType(n).getMethods())
             .flatMap(Arrays::stream)
             .filter(m -> m.isAnnotationPresent(EventSubscriber.class))
+            .distinct()
             .collect(Collectors.toList());
         
        Predicate<Method> filter = m -> m.getReturnType().equals(Void.TYPE) && m.getParameterCount() == 1;
@@ -54,8 +55,10 @@ public class EventSubscriberRegistrar implements ApplicationContextAware {
     }
     
     private void registerSubscriberMethod(Method m) {
+        logger.info("registering subscription method {}", m);
         eventBus.subscribe(m.getParameters()[0].getType(), (Object event) -> { 
             try {
+                System.out.println("sending event: " + event);
                 m.invoke(applicationContext.getBean(m.getDeclaringClass()), event);
             } catch (Exception e) {
                 logger.error("error processing event", e);
