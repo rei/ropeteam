@@ -1,9 +1,7 @@
-flock
-=====
+RopeTeam
+========
 
 distributed events and coordination for jgroups clusters in spring applications.
-
-[![Build Status](https://travis-ci.org/jeffskj/flock.svg?branch=master)](https://travis-ci.org/jeffskj/flock)
 
 Features
 --------
@@ -46,3 +44,5 @@ Publish events to all members of the cluster. Events can be any object that can 
     public void handleHelloEvent(HelloEvent e) {
        System.out.println(e.getGreeting())
     }
+
+*This project is a fork/rename of jeffskj/flock*

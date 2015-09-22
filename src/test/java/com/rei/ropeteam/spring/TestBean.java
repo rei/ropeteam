@@ -1,12 +1,14 @@
-package io.github.flock.spring;
-
-import io.github.flock.EventPublisher;
+package com.rei.ropeteam.spring;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.rei.ropeteam.EventPublisher;
+import com.rei.ropeteam.spring.EventSubscriber;
+import com.rei.ropeteam.spring.OnePerCluster;
 
 public class TestBean {
     private int opcInvocations = 0;

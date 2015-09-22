@@ -1,13 +1,13 @@
-package io.github.flock.spring;
-
-import io.github.flock.ClusterEventBus;
-import io.github.flock.OncePerClusterExecutor;
+package com.rei.ropeteam.spring;
 
 import org.jgroups.JChannel;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+
+import com.rei.ropeteam.ClusterEventBus;
+import com.rei.ropeteam.OncePerClusterExecutor;
 
 @Configuration
 public class FlockConfig {

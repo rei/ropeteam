@@ -1,7 +1,6 @@
-package io.github.flock;
+package com.rei.ropeteam;
 
 import static org.junit.Assert.assertEquals;
-import io.github.flock.OncePerClusterExecutor;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
@@ -9,6 +8,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jgroups.JChannel;
 import org.jgroups.util.Util;
 import org.junit.Test;
+
+import com.rei.ropeteam.OncePerClusterExecutor;
 
 public class OncePerClusterExecutorTest {
 

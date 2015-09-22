@@ -1,4 +1,4 @@
-package io.github.flock.spring;
+package com.rei.ropeteam.spring;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,4 +18,4 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface OnePerCluster {}
+public @interface EventSubscriber {}

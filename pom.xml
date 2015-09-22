@@ -9,9 +9,14 @@
         <version>9</version>
     </parent>
 	
-	<groupId>io.github.jeffskj.flock</groupId>
-	<artifactId>flock</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<groupId>com.rei.ropeteam</groupId>
+	<artifactId>ropeteam</artifactId>
+	<version>${revision}</version>
+	
+	<properties>
+		<revision>99999-SNAPSHOT</revision>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>

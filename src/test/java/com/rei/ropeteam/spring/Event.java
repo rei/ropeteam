@@ -1,4 +1,4 @@
-package io.github.flock.spring;
+package com.rei.ropeteam.spring;
 
 public class Event {
     private String data;

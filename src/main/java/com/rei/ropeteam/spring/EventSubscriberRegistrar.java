@@ -1,6 +1,4 @@
-package io.github.flock.spring;
-
-import io.github.flock.ClusterEventBus;
+package com.rei.ropeteam.spring;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -16,6 +14,8 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import com.rei.ropeteam.ClusterEventBus;
 
 public class EventSubscriberRegistrar implements ApplicationContextAware {
     

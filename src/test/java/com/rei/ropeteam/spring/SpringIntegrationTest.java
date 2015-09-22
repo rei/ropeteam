@@ -1,7 +1,6 @@
-package io.github.flock.spring;
+package com.rei.ropeteam.spring;
 
 import static org.junit.Assert.assertEquals;
-import io.github.flock.EventPublisher;
 
 import org.jgroups.JChannel;
 import org.jgroups.util.Util;
@@ -14,6 +13,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+
+import com.rei.ropeteam.EventPublisher;
+import com.rei.ropeteam.spring.FlockConfig;
 
 public class SpringIntegrationTest {
 

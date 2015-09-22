@@ -1,4 +1,4 @@
-package io.github.flock;
+package com.rei.ropeteam;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.jgroups.JChannel;
 import org.jgroups.util.Util;
 import org.junit.Test;
+
+import com.rei.ropeteam.ClusterEventBus;
+import com.rei.ropeteam.EventSubscriber;
 
 public class ClusterEventBusTest {
     private static final String CLUSTER_NAME = "eventbus";
