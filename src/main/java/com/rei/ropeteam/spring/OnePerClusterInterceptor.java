@@ -25,6 +25,7 @@ public class OnePerClusterInterceptor extends AbstractPointcutAdvisor implements
 
     public OnePerClusterInterceptor(OncePerClusterExecutor executor) {
         this.executor = executor;
+        setOrder(LOWEST_PRECEDENCE);
     }
     
     @Override

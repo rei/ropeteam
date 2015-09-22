@@ -10,10 +10,11 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import com.rei.ropeteam.ClusterEventBus;
 
@@ -36,8 +37,11 @@ public class EventSubscriberRegistrar implements ApplicationContextAware {
 
     @PostConstruct
     public void registerListeners() {
+        ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)applicationContext).getBeanFactory();
+        
         Collection<Method> candidateMethods = Arrays.stream(applicationContext.getBeanDefinitionNames())
-            .map (n -> AopUtils.getTargetClass(applicationContext.getBean(n)).getMethods())
+            .filter(n -> beanFactory.getBeanDefinition(n).isPrototype() || beanFactory.getBeanDefinition(n).isSingleton())
+            .map(n -> applicationContext.getType(n).getMethods())
             .flatMap(Arrays::stream)
             .filter(m -> m.isAnnotationPresent(EventSubscriber.class))
             .collect(Collectors.toList());
