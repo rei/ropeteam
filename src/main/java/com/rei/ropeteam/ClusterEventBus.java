@@ -1,6 +1,10 @@
 package com.rei.ropeteam;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -14,13 +18,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 
 public class ClusterEventBus implements EventPublisher {
     private static final Logger logger = LoggerFactory.getLogger(ClusterEventBus.class);
     
-    private Multimap<Class, EventSubscriber> subscribers = ArrayListMultimap.create();
+    private Map<Class<?>, List<EventSubscriber>> subscribers = new HashMap<>();
     
     private ForkChannel channel;
     
@@ -36,7 +38,7 @@ public class ClusterEventBus implements EventPublisher {
     }
 
     public void subscribe(Class<?> eventType, EventSubscriber listener) {
-        subscribers.put(eventType, listener);
+        subscribers.compute(eventType, (k, v) -> v == null ? new LinkedList<>() : v).add(listener);
     }
     
     @Override
