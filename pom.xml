@@ -11,7 +11,7 @@
 	
 	<groupId>com.rei.ropeteam</groupId>
 	<artifactId>ropeteam</artifactId>
-	<version>${revision}</version>
+	<version>99999-SNAPSHOT</version>
 	
 	<properties>
 		<revision>99999-SNAPSHOT</revision>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>4.1.2.RELEASE</version>
+			<version>4.1.7.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jgroups</groupId>
