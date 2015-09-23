@@ -10,7 +10,7 @@ import com.rei.ropeteam.ClusterEventBus;
 import com.rei.ropeteam.OncePerClusterExecutor;
 
 @Configuration
-public class FlockConfig {
+public class RopeTeamConfig {
     
     @Bean
     @Scope(BeanDefinition.SCOPE_SINGLETON)
