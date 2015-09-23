@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 
 import com.rei.ropeteam.EventPublisher;
-import com.rei.ropeteam.spring.FlockConfig;
+import com.rei.ropeteam.spring.RopeTeamConfig;
 
 public class SpringIntegrationTest {
 
@@ -43,7 +43,7 @@ public class SpringIntegrationTest {
     }
 
     @Configuration
-    @Import(FlockConfig.class)
+    @Import(RopeTeamConfig.class)
     public static class TestSpringConfig {
         @Bean
         public static JChannel channel() throws Exception {
