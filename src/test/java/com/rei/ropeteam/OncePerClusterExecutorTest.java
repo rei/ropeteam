@@ -9,8 +9,6 @@ import org.jgroups.JChannel;
 import org.jgroups.util.Util;
 import org.junit.Test;
 
-import com.rei.ropeteam.OncePerClusterExecutor;
-
 public class OncePerClusterExecutorTest {
 
     private static final String CLUSTER_NAME = "opc";
@@ -19,15 +17,8 @@ public class OncePerClusterExecutorTest {
     public void onlyExecutesOncePerCluster() throws Exception {
         final AtomicLong counter = new AtomicLong();
         
-        Runnable cmd = new Runnable() {
-            @Override
-            public void run() {
-                counter.incrementAndGet();
-            }
-        };
-        
         CountDownLatch latch = new CountDownLatch(3);
-        
+        Action cmd = () -> counter.incrementAndGet();
         new Thread(createRunner(cmd, latch)).start();
         new Thread(createRunner(cmd, latch)).start();
         new Thread(createRunner(cmd, latch)).start();
@@ -37,22 +28,19 @@ public class OncePerClusterExecutorTest {
         assertEquals(2, counter.intValue());
     }
     
-    private Runnable createRunner(final Runnable cmd, final CountDownLatch latch) throws Exception {
+    private Runnable createRunner(final Action cmd, final CountDownLatch latch) throws Exception {
         final JChannel channel = new JChannel(Util.getTestStack());
         channel.connect(CLUSTER_NAME);
         
-        return new Runnable() {
-            @Override
-            public void run() {
+        return ()->{
                 try {
                     OncePerClusterExecutor executor = new OncePerClusterExecutor(channel);
                     executor.execute("mycmd", cmd);
                     executor.execute("mycmd", cmd);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
                 latch.countDown();
-            }
         };
     }
 

@@ -38,10 +38,12 @@ public class OncePerClusterExecutor {
         return lockService.getLock(cmdName).tryLock();
     }
     
-    public void execute(String cmdName, Runnable cmd) {
+    public void execute(String cmdName, Action cmd) throws Throwable {
         if (canExecute(cmdName)) {
             logger.info("running {} on {}", cmdName, channel.getAddressAsString());
-            cmd.run();
+            cmd.execute();
+        } else {
+            logger.info("skipping {} on {}", cmdName, channel.getAddressAsString());
         }
     }
 }

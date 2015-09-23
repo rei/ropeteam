@@ -30,9 +30,7 @@ public class OnePerClusterInterceptor extends AbstractPointcutAdvisor implements
     
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        if (executor.canExecute(invocation.getMethod().toString())) {
-            return invocation.proceed();
-        }
+        executor.execute(invocation.getMethod().toString(), () -> invocation.proceed());
         return null;
     }
 
