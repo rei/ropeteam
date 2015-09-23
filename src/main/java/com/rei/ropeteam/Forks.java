@@ -7,13 +7,18 @@ import org.jgroups.stack.Protocol;
 
 public class Forks {
     public static ForkChannel fork(JChannel main, String id, Protocol... extraProtocols) {
+        return fork(main, id, true, extraProtocols);
+    }
+    
+    public static ForkChannel fork(JChannel main, String id, boolean connect, Protocol... extraProtocols) {
         try {
-            FORK forkProto = new FORK();
-            forkProto.setProtocolStack(main.getProtocolStack());
-            main.getProtocolStack().insertProtocolAtTop(forkProto);
+            main.getProtocolStack().insertProtocolAtTop(new FORK().setProtocolStack(main.getProtocolStack()));
             
             ForkChannel fork = new ForkChannel(main, id, id, extraProtocols);
-            fork.connect(main.getClusterName());
+            
+            if (connect) {
+                fork.connect(main.getClusterName());
+            }
             
             return fork;
         } catch (Exception e) {
