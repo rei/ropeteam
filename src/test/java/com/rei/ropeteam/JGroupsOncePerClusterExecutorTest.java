@@ -9,7 +9,7 @@ import org.jgroups.JChannel;
 import org.jgroups.util.Util;
 import org.junit.Test;
 
-public class OncePerClusterExecutorTest {
+public class JGroupsOncePerClusterExecutorTest {
 
     private static final String CLUSTER_NAME = "opc";
 
@@ -34,7 +34,7 @@ public class OncePerClusterExecutorTest {
         
         return ()->{
                 try {
-                    OncePerClusterExecutor executor = new OncePerClusterExecutor(channel);
+                    OncePerClusterExecutor executor = new JGroupsOncePerClusterExecutor(channel);
                     executor.execute("mycmd", cmd);
                     executor.execute("mycmd", cmd);
                 } catch (Throwable t) {

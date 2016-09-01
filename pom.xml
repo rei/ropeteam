@@ -11,7 +11,7 @@
 	
 	<groupId>com.rei.ropeteam</groupId>
 	<artifactId>ropeteam</artifactId>
-	<version>99999-SNAPSHOT</version>
+	<version>${revision}</version>
 	
 	<properties>
 		<revision>99999-SNAPSHOT</revision>
