@@ -45,4 +45,13 @@ Publish events to all members of the cluster. Events can be any object that can 
        System.out.println(e.getGreeting())
     }
 
+Get It
+------
+
+    <dependency>
+        <groupId>com.rei.ropeteam</groupId>
+        <artifactId>ropeteam</artifactId>
+        <version>1.0</version>
+    </dependency>
+
 *This project is a fork/rename of jeffskj/flock*
