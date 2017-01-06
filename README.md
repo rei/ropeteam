@@ -12,7 +12,7 @@ Task Limiting
 -------------
 
 Limit a task or method call to one cluster member. This is useful for scheduled tasks that you 
-only want running on one member. Flock allows dynamic assignment of which cluster member runs a task. 
+only want running on one member. Ropeteam allows dynamic assignment of which cluster member runs a task. 
 A task will stay assigned to the same member unless it dies, in which case it will failover to another host.  
 
 **Example**
