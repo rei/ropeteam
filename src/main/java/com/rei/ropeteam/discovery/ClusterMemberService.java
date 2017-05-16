@@ -53,7 +53,6 @@ public class ClusterMemberService {
     public Map<UniqueStringAddress, ClusterMember> getClusterMembers() {
         return readMembers().stream()
                 .map(this::doAddressLookup)
-//                .filter(e -> !e.getKey().equals(getCurrentMember()))
                 .filter(Objects::nonNull)
                 .collect(toMap(Map.Entry::getKey,
                                Map.Entry::getValue));
