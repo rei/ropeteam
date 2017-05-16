@@ -17,7 +17,7 @@ public class ClusterEventBusTest {
     
     @Test
     public void canPublishAndReceiveEvents() throws Exception {
-        Collection<Object> received = new ConcurrentLinkedDeque<Object>(); 
+        Collection<Object> received = new ConcurrentLinkedDeque<>();
         ClusterEventBus mainBus = createBus(received);
         
         createBus(received);
@@ -42,14 +42,10 @@ public class ClusterEventBusTest {
         channel.connect(CLUSTER_NAME);
         
         ClusterEventBus bus = new ClusterEventBus(channel);
-        bus.subscribe(MyEvent.class, new EventSubscriber() {
-            
-            @Override
-            public void receiveEvent(Object event) {
-                MyEvent msg = (MyEvent) event;
-                System.out.println(msg.getMsg());
-                received.add(msg);
-            }
+        bus.subscribe(MyEvent.class, event -> {
+            MyEvent msg = (MyEvent) event;
+            System.out.println(msg.getMsg());
+            received.add(msg);
         });
         
         return bus;
