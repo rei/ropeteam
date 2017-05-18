@@ -2,14 +2,31 @@ package com.rei.ropeteam.discovery;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jgroups.Address;
+import org.jgroups.Event;
+import org.jgroups.Global;
+import org.jgroups.Message;
+import org.jgroups.PhysicalAddress;
+import org.jgroups.annotations.ManagedAttribute;
+import org.jgroups.annotations.ManagedOperation;
+import org.jgroups.annotations.Property;
 import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.conf.PropertyConverters;
 import org.jgroups.protocols.Discovery;
 import org.jgroups.protocols.PingData;
+import org.jgroups.protocols.PingHeader;
+import org.jgroups.protocols.TCPPING;
+import org.jgroups.util.BoundedList;
 import org.jgroups.util.Responses;
+import org.jgroups.util.Tuple;
 
 public class ExternalJsonFileDiscovery extends Discovery {
 
@@ -24,25 +41,42 @@ public class ExternalJsonFileDiscovery extends Discovery {
         this.clusterMemberService = clusterMemberService;
     }
 
-    @Override
-    public boolean isDynamic() {
-        return true;
+    public void discoveryRequestReceived(Address sender, String logical_name, PhysicalAddress physical_addr) {
+        super.discoveryRequestReceived(sender, logical_name, physical_addr);
     }
 
     @Override
-    protected void findMembers(List<Address> members, boolean initial_discovery, Responses responses) {
+    public void findMembers(List<Address> members, boolean initial_discovery, Responses responses) {
+        PhysicalAddress physical_addr=(PhysicalAddress)down(new Event(Event.GET_PHYSICAL_ADDRESS, local_addr));
 
-        List<PingData> pings = clusterMemberService.getClusterMembers().entrySet().stream()
-                .sorted(Comparator.comparing(e -> e.getValue().getId()))
-                .map(e -> new PingData(new UniqueStringAddress(e.getValue().getId(), e.getKey()), false))
-                .collect(toList());
+        // https://issues.jboss.org/browse/JGRP-1670
+        PingData data=new PingData(local_addr, false, org.jgroups.util.UUID.get(local_addr), physical_addr);
+        PingHeader hdr=new PingHeader(PingHeader.GET_MBRS_REQ).clusterName(cluster_name);
 
-        if (!pings.isEmpty()) {
-            pings.get(0).coord(true);
+        List<PhysicalAddress> clusterMembers = clusterMemberService.getClusterMembers();
+
+        for(final PhysicalAddress addr : clusterMembers) {
+            // the message needs to be DONT_BUNDLE, see explanation above
+            final Message msg=new Message(addr).setFlag(Message.Flag.INTERNAL, Message.Flag.DONT_BUNDLE, Message.Flag.OOB)
+                    .putHeader(this.id,hdr).setBuffer(marshal(data));
+
+            if(async_discovery_use_separate_thread_per_request) {
+                timer.execute(new Runnable() {
+                    public void run() {
+                        log.trace("%s: sending discovery request to %s", local_addr, msg.getDest());
+                        down_prot.down(new Event(Event.MSG, msg));
+                    }
+                });
+            }
+            else {
+                log.trace("%s: sending discovery request to %s", local_addr, msg.getDest());
+                down_prot.down(new Event(Event.MSG, msg));
+            }
         }
+    }
 
-        pings.stream()
-                .filter(pd -> !pd.getAddress().equals(clusterMemberService.getCurrentMember())) // filter ourselves out
-                .forEach(p -> responses.addResponse(p, true));
+    @Override
+    public boolean isDynamic() {
+        return true;
     }
 }

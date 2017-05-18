@@ -12,34 +12,45 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import fi.iki.elonen.NanoHTTPD;
 
 import org.jgroups.JChannel;
 import org.jgroups.Message;
+import org.jgroups.ReceiverAdapter;
+import org.jgroups.logging.LogFactory;
+import org.jgroups.protocols.FD_ALL;
+import org.jgroups.protocols.FD_SOCK;
 import org.jgroups.protocols.FRAG2;
+import org.jgroups.protocols.TCP_NIO2;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.protocols.pbcast.STABLE;
 import org.jgroups.stack.IpAddress;
+import org.jgroups.util.ExtendedUUID;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.rei.ropeteam.JgroupsLogFactoryAdapter;
+
 public class ExternalJsonFileDiscoveryTest {
     private CountDownLatch countDownLatch = new CountDownLatch(9);
+
+    static {
+        LogFactory.setCustomLogFactory(new JgroupsLogFactoryAdapter());
+    }
 
     @Test
     public void findMembers() throws Exception {
 
-        ClusterMemberService.ClusterMember a = createMember("a");
-        ClusterMemberService.ClusterMember b = createMember("b");
-        ClusterMemberService.ClusterMember c = createMember("c");
+        ClusterMember a = createMember("a");
+        ClusterMember b = createMember("b");
+        ClusterMember c = createMember("c");
 
-        ClusterMemberService.ClusterMembers members = new ClusterMemberService.ClusterMembers();
+        ClusterMembers members = new ClusterMembers();
         members.setMembers(Arrays.asList(a, b, c));
 
         JsonServer server = new JsonServer(members);
@@ -51,7 +62,6 @@ public class ExternalJsonFileDiscoveryTest {
 
         channels.forEach(ch -> {
             System.out.println(ch.getAddressAsString() + " View:" + ch.getViewAsString());
-            assertEquals("a", ((UniqueStringAddress) ch.getView().getCoord()).getUniqueString());
             assertEquals(3, ch.getView().getMembers().size());
             try {
                 ch.send(null, "test message");
@@ -70,21 +80,30 @@ public class ExternalJsonFileDiscoveryTest {
 
             ClusterMemberService service = new ClusterMemberService("http://127.0.0.1:" + serverPort);
             service.setAddressLookup(this::mockAddressLookup);
-            service.setHostnameSupplier(() -> host);
 
-            JChannel channel = new JChannel(new DynamicPortTcpNio2(service)
-                                                    .setBindAddress(InetAddress.getLoopbackAddress())
-                                                    .setBindPort(port)
-                                                    .setPortRange(1),
+//            DynamicPortTcpNio2 tcp = new DynamicPortTcpNio2(service);
+            TCP_NIO2 tcp = new TCP_NIO2();
+            tcp.setBindAddress(InetAddress.getLoopbackAddress());
+            tcp.setBindPort(port);
+            tcp.setPortRange(1);
+
+            JChannel channel = new JChannel(tcp,
                                             new ExternalJsonFileDiscovery(service),
+                                            new FD_SOCK(),
+                                            new FD_ALL(),
                                             new NAKACK2(),
                                             new UNICAST3(),
                                             new STABLE(),
                                             new GMS().joinTimeout(1000),
                                             new FRAG2().fragSize(8000));
 
-            channel.addAddressGenerator(() -> getLocalIpAddress(service.getHostname(), port));
-            channel.receiver(msg -> countDownLatch.countDown());
+            channel.addAddressGenerator(() -> ExtendedUUID.randomUUID(host));
+            channel.receiver(new ReceiverAdapter() {
+                @Override
+                public void receive(Message msg) {
+                    countDownLatch.countDown();
+                }
+            });
             channel.connect("test-cluster");
             return channel;
         } catch (Exception e) {
@@ -92,22 +111,21 @@ public class ExternalJsonFileDiscoveryTest {
         }
     }
 
-    private UniqueStringAddress mockAddressLookup(ClusterMemberService.ClusterMember member) {
-        return getLocalIpAddress(member.getId(), member.getPort());
+    private IpAddress mockAddressLookup(ClusterMember member) {
+        return getLocalIpAddress(member.getPort());
     }
 
-    private UniqueStringAddress getLocalIpAddress(String id, int port) {
+    private IpAddress getLocalIpAddress(int port) {
         try {
-            return new UniqueStringAddress(id, new IpAddress("127.0.0.1", port));
+            return new IpAddress("127.0.0.1", port);
         } catch (UnknownHostException e) {
             return null;
         }
     }
 
-    private ClusterMemberService.ClusterMember createMember(String host) throws IOException {
-        ClusterMemberService.ClusterMember member = new ClusterMemberService.ClusterMember();
+    private ClusterMember createMember(String host) throws IOException {
+        ClusterMember member = new ClusterMember();
         member.setHost(host);
-        member.setId(host);
         member.setPort(findOpenPort());
         return member;
     }
