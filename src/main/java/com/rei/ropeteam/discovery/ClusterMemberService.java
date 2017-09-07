@@ -1,13 +1,13 @@
 package com.rei.ropeteam.discovery;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,10 +15,14 @@ import java.util.function.Function;
 
 import org.jgroups.PhysicalAddress;
 import org.jgroups.stack.IpAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClusterMemberService {
+    private static final Logger logger = LoggerFactory.getLogger(ClusterMemberService.class);
+
     private ObjectMapper objectMapper = new ObjectMapper();
     private Function<ClusterMember, IpAddress> addressLookup = this::lookupAddress;
 
@@ -64,7 +68,8 @@ public class ClusterMemberService {
         try {
             return objectMapper.readValue(url, ClusterMembers.class).getMembers();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            logger.error("error getting cluster member list", e);
+            return new ArrayList<>();
         }
     }
 
