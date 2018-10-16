@@ -25,6 +25,7 @@ import org.jgroups.protocols.PingData;
 import org.jgroups.protocols.PingHeader;
 import org.jgroups.protocols.TCPPING;
 import org.jgroups.util.BoundedList;
+import org.jgroups.util.NameCache;
 import org.jgroups.util.Responses;
 import org.jgroups.util.Tuple;
 
@@ -50,7 +51,7 @@ public class ExternalJsonFileDiscovery extends Discovery {
         PhysicalAddress physical_addr=(PhysicalAddress)down(new Event(Event.GET_PHYSICAL_ADDRESS, local_addr));
 
         // https://issues.jboss.org/browse/JGRP-1670
-        PingData data=new PingData(local_addr, false, org.jgroups.util.UUID.get(local_addr), physical_addr);
+        PingData data=new PingData(local_addr, false, NameCache.get(local_addr), physical_addr);
         PingHeader hdr=new PingHeader(PingHeader.GET_MBRS_REQ).clusterName(cluster_name);
 
         List<PhysicalAddress> clusterMembers = clusterMemberService.getClusterMembers();
@@ -61,16 +62,14 @@ public class ExternalJsonFileDiscovery extends Discovery {
                     .putHeader(this.id,hdr).setBuffer(marshal(data));
 
             if(async_discovery_use_separate_thread_per_request) {
-                timer.execute(new Runnable() {
-                    public void run() {
-                        log.trace("%s: sending discovery request to %s", local_addr, msg.getDest());
-                        down_prot.down(new Event(Event.MSG, msg));
-                    }
+                timer.execute(() -> {
+                    log.trace("%s: sending discovery request to %s", local_addr, msg.getDest());
+                    down_prot.down(msg);
                 });
             }
             else {
                 log.trace("%s: sending discovery request to %s", local_addr, msg.getDest());
-                down_prot.down(new Event(Event.MSG, msg));
+                down_prot.down(msg);
             }
         }
     }

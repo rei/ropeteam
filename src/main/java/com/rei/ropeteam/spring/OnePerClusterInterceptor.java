@@ -17,7 +17,11 @@ public class OnePerClusterInterceptor extends AbstractPointcutAdvisor implements
     private static final StaticMethodMatcherPointcut pointcut = new StaticMethodMatcherPointcut() {
         @Override
         public boolean matches(Method method, Class<?> targetClass) {
-            return method.isAnnotationPresent(OnePerCluster.class) && method.getReturnType().equals(Void.TYPE);
+            boolean annotationPresent = method.isAnnotationPresent(OnePerCluster.class);
+            if (annotationPresent && !method.getReturnType().equals(Void.TYPE)) {
+                throw new IllegalArgumentException("@OnePerCluster annotated methods MUST return 'void'!");
+            }
+            return annotationPresent;
         }
     };
 

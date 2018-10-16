@@ -35,12 +35,7 @@ public class TestBean {
         blankEvents.add(e);
     }
     
-    @EventSubscriber
-    public Event badSubscriber(Event e) {
-        System.out.println("BAD: " + e.getData());
-        receivedEvents.add(e);
-        return e;
-    }
+
     
     @EventSubscriber
     public void receiveEvent(Event e) {

@@ -41,7 +41,7 @@ public class RopeTeamConfig {
     
     @Bean
     @Scope(BeanDefinition.SCOPE_SINGLETON)
-    public static EventSubscriberRegistrar eventSubscriberRegistrar(ClusterEventBus bus) {
-        return new EventSubscriberRegistrar(bus);
+    public static EventSubscriberRegistrar eventSubscriberRegistrar(ClusterEventBus bus, ApplicationContext applicationContext) {
+        return new EventSubscriberRegistrar(bus, applicationContext);
     }
 }

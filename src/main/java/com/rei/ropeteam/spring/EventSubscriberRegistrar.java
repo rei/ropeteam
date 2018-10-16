@@ -1,8 +1,12 @@
 package com.rei.ropeteam.spring;
 
+import static java.util.stream.Collectors.toList;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -10,29 +14,22 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import com.rei.ropeteam.ClusterEventBus;
 
-public class EventSubscriberRegistrar implements ApplicationContextAware {
+public class EventSubscriberRegistrar {
     
     private static final Logger logger = LoggerFactory.getLogger(EventSubscriberRegistrar.class);
 
     private ApplicationContext applicationContext;
     private ClusterEventBus eventBus;
 
-    public EventSubscriberRegistrar(ClusterEventBus eventBus) {
+    public EventSubscriberRegistrar(ClusterEventBus eventBus, ApplicationContext ctx) {
         this.eventBus = eventBus;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        
+        this.applicationContext = ctx;
     }
 
     @PostConstruct
@@ -45,13 +42,21 @@ public class EventSubscriberRegistrar implements ApplicationContextAware {
             .flatMap(Arrays::stream)
             .filter(m -> m.isAnnotationPresent(EventSubscriber.class))
             .distinct()
-            .collect(Collectors.toList());
+            .collect(toList());
         
        Predicate<Method> filter = m -> m.getReturnType().equals(Void.TYPE) && m.getParameterCount() == 1;
-       candidateMethods.stream().filter(filter).forEach(this::registerSubscriberMethod);
-       
-       candidateMethods.stream().filter(filter.negate()).forEach(m -> 
-           logger.warn("skipping event subscriber method {}, because it returns a value or accepts more than one parameter", m));
+
+        List<Method> invalidMethods = candidateMethods.stream().filter(filter.negate()).collect(toList());
+        if (!invalidMethods.isEmpty()) {
+            String methodList = invalidMethods.stream().map(Objects::toString).collect(Collectors.joining(","));
+
+            throw new IllegalArgumentException("invalid event subscriber methods " + methodList
+                                                       + ". Subscriber methods must return 'void' and accept only 1 parameter!");
+        }
+
+        candidateMethods.stream()
+                        .filter(filter)
+                        .forEach(this::registerSubscriberMethod);
     }
     
     private void registerSubscriberMethod(Method m) {

@@ -3,9 +3,11 @@ package com.rei.ropeteam.spring;
 import static org.junit.Assert.assertEquals;
 
 import org.jgroups.JChannel;
+import org.jgroups.logging.LogFactory;
 import org.jgroups.util.Util;
 import org.junit.Test;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -15,15 +17,30 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 
 import com.rei.ropeteam.EventPublisher;
-import com.rei.ropeteam.spring.RopeTeamConfig;
+import com.rei.ropeteam.JgroupsLogFactoryAdapter;
 
 public class SpringIntegrationTest {
+    static {
+        LogFactory.setCustomLogFactory(new JgroupsLogFactoryAdapter());
+    }
+
+    @Test(expected = BeanCreationException.class)
+    @SuppressWarnings("resource")
+    public void blowsUpContextIfInvalidSubscriber() {
+        new AnnotationConfigApplicationContext(InvalidTestSpringConfig.class);
+    }
+
+    @Test(expected = BeanCreationException.class)
+    @SuppressWarnings("resource")
+    public void blowsUpContextIfInvalidOnePerCluster() {
+        new AnnotationConfigApplicationContext(InvalidOpcTestSpringConfig.class);
+    }
 
     @Test
     @SuppressWarnings("resource")
     public void interceptsOncePerClusterAnnotatedStuff() throws InterruptedException {
-        ApplicationContext context1 = new AnnotationConfigApplicationContext(TestSpringConfig.class);
-        ApplicationContext context2 = new AnnotationConfigApplicationContext(TestSpringConfig.class);
+        ApplicationContext context1 = new AnnotationConfigApplicationContext(ValidTestSpringConfig.class);
+        ApplicationContext context2 = new AnnotationConfigApplicationContext(ValidTestSpringConfig.class);
         context1.getBean(TestBean.class).publishEvent();
         context1.getBean(TestBean.class).oncePerCluster();
         context2.getBean(TestBean.class).oncePerCluster();
@@ -44,23 +61,47 @@ public class SpringIntegrationTest {
 
     @Configuration
     @Import(RopeTeamConfig.class)
-    public static class TestSpringConfig {
+    public static class BaseTestSpringConfig {
         @Bean
         public static JChannel channel() throws Exception {
             JChannel channel = new JChannel(Util.getTestStack());
             channel.connect("test");
             return channel;
         }
-        
+
+        @Bean
+        public static DefaultAdvisorAutoProxyCreator aop() {
+            return new DefaultAdvisorAutoProxyCreator();
+        }
+    }
+
+    @Configuration
+    @Import(BaseTestSpringConfig.class)
+    public static class ValidTestSpringConfig {
         @Bean
         @Scope(proxyMode=ScopedProxyMode.TARGET_CLASS)
         public static TestBean testBean() {
             return new TestBean();
         }
-        
+    }
+
+    @Configuration
+    @Import(BaseTestSpringConfig.class)
+    public static class InvalidTestSpringConfig {
         @Bean
-        public static DefaultAdvisorAutoProxyCreator aop() {
-            return new DefaultAdvisorAutoProxyCreator();
+        @Scope(proxyMode=ScopedProxyMode.TARGET_CLASS)
+        public static InvalidTestBean testBean() {
+            return new InvalidTestBean();
+        }
+    }
+
+    @Configuration
+    @Import(BaseTestSpringConfig.class)
+    public static class InvalidOpcTestSpringConfig {
+        @Bean
+        @Scope(proxyMode=ScopedProxyMode.TARGET_CLASS)
+        public static InvalidOpcTestBean testBean() {
+            return new InvalidOpcTestBean();
         }
     }
 }
