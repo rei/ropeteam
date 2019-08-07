@@ -16,7 +16,7 @@ import com.rei.ropeteam.OncePerClusterExecutor;
 
 @Configuration
 public class RopeTeamConfig {
-    
+
     @Bean
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     public static OncePerClusterExecutor oncePerClusterExecutor(ApplicationContext ctx) {
@@ -32,13 +32,13 @@ public class RopeTeamConfig {
     public static OnePerClusterInterceptor onePerClusterInterceptor(OncePerClusterExecutor executor) {
         return new OnePerClusterInterceptor(executor);
     }
-    
+
     @Bean
     @Scope(BeanDefinition.SCOPE_SINGLETON)
-    public static ClusterEventBus eventBus(JChannel mainChannel) {
+    public static ClusterEventBus clusterEventBus(JChannel mainChannel) {
         return new ClusterEventBus(mainChannel);
     }
-    
+
     @Bean
     @Scope(BeanDefinition.SCOPE_SINGLETON)
     public static EventSubscriberRegistrar eventSubscriberRegistrar(ClusterEventBus bus, ApplicationContext applicationContext) {
