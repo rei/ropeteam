@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>4.2.26.Final</version>
+			<version>4.2.27.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.annotation</groupId>
